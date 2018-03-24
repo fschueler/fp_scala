@@ -1,4 +1,6 @@
-package fpinscala.datastractures 
+package fpinscala.datastructures
+
+import scala.annotation.tailrec
 
 sealed trait List[+A]
 case object Nil extends List[Nothing]
@@ -10,10 +12,20 @@ object List {
     if (as.isEmpty) Nil
     else Cons(as.head, apply(as.tail: _*))
 
+  def head[A](list: List[A]): A = list match {
+    case Cons(x, _) => x
+  }
+
   def tail[A](list: List[A]): List[A] = list match {
     case Nil => Nil
     case Cons(x, Nil) => Nil
     case Cons(x, xs) => xs
+  }
+
+  def init[A](list: List[A]): List[A] = list match {
+    case Nil => Nil
+    case Cons(x, Nil) => Nil
+    case Cons(x, xs) => Cons(x, init(xs))
   }
 
   def setHead[A](list: List[A], newHead: A): List[A] = {
@@ -42,9 +54,9 @@ object List {
       case Cons(x, xs) => f(x, foldRight(xs, z)(f))
     }
 
-  def sum(l: List[Int]) = foldRight(l, 0)((x, y) => x + y)
+  def sum(l: List[Int]): Int = foldRight(l, 0)((x, y) => x + y)
 
-  def product(l: List[Double]) = foldRight(l, 1.0)(_ * _)
+  def product(l: List[Double]): Double = foldRight(l, 1.0)(_ * _)
 
   /**
     * foldRight replaces the constructors of the List. 
@@ -59,5 +71,20 @@ object List {
     * 1 + 1 + 1 + 0 = 3
     *
     */
-  def length[A](l: List[A]): Int = foldRight(l, 0)((x, y) => 1 + y) 
+  def length[A](l: List[A]): Int = foldRight(l, 0)((x, y) => 1 + y)
+
+  @tailrec
+  def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B =
+    as match {
+      case Nil => z
+      case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
+    }
+
+  def sumFoldLeft(l: List[Int]): Int = foldLeft(l, 0)(_ + _)
+
+  def productFoldLeft(l: List[Double]): Double = foldLeft(l, 1.0)(_ * _)
+
+  def lengthFoldLeft[A](l: List[A]): Int = foldLeft(l, 0)((x, y) => x + 1)
+
+  def reverse[A](l: List[A]): List[A] = foldLeft(l, Nil: List[A])((x, y) => Cons(y, x))
 }
